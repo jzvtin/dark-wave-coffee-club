@@ -108,6 +108,7 @@ function site_text_defaults() {
 function site_text_all() {
   static $cache = null;
   if ($cache !== null) return $cache;
+  if (sb_enabled()) { $cache = sb_site_text_all(); return $cache; }
   $j = @file_get_contents(SITE_TEXT_FILE);
   $a = $j ? json_decode($j, true) : [];
   $cache = is_array($a) ? $a : [];
@@ -125,8 +126,8 @@ function save_site_text($input) {
   foreach (site_text_defaults() as $k => $def) {
     $v = trim((string)($input[$k] ?? ''));
     if ($v !== '' && $v !== $def) $out[$k] = $v;
-
   }
+  if (sb_enabled()) { sb_save_site_text($out); return count($out); }
   if (!is_dir(DATA_DIR)) @mkdir(DATA_DIR, 0755, true);
   file_put_contents(SITE_TEXT_FILE,
     json_encode($out, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),

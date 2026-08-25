@@ -3,15 +3,24 @@ $msg = 'Something went wrong.'; $ok = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email = trim($_POST['email'] ?? '');
   if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    if (!is_dir(DATA_DIR)) mkdir(DATA_DIR, 0755, true);
-    $file = DATA_DIR . '/subscribers.txt';
-    $existing = is_file($file) ? file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
-    $emails = array_map(fn($l) => explode("\t", $l)[0], $existing);
-    if (in_array(strtolower($email), array_map('strtolower', $emails))) {
-      $ok = true; $msg = "You're already on the list — see you soon.";
+    if (sb_enabled()) {
+      if (sb_subscriber_exists($email)) {
+        $ok = true; $msg = "You're already on the list — see you soon.";
+      } else {
+        sb_add_subscriber($email);
+        $ok = true; $msg = "You're in! We'll send the next review your way.";
+      }
     } else {
-      file_put_contents($file, $email . "\t" . date('c') . "\n", FILE_APPEND | LOCK_EX);
-      $ok = true; $msg = "You're in! We'll send the next review your way.";
+      if (!is_dir(DATA_DIR)) mkdir(DATA_DIR, 0755, true);
+      $file = DATA_DIR . '/subscribers.txt';
+      $existing = is_file($file) ? file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
+      $emails = array_map(fn($l) => explode("\t", $l)[0], $existing);
+      if (in_array(strtolower($email), array_map('strtolower', $emails))) {
+        $ok = true; $msg = "You're already on the list — see you soon.";
+      } else {
+        file_put_contents($file, $email . "\t" . date('c') . "\n", FILE_APPEND | LOCK_EX);
+        $ok = true; $msg = "You're in! We'll send the next review your way.";
+      }
     }
   } else {
     $msg = 'That email did not look right — try again.';

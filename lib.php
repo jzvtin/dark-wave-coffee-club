@@ -18,9 +18,11 @@ define('SITE_URL', IS_STAGING ? 'https://dynaradigital.com/andre' : 'https://' .
 $__cfg = __DIR__ . '/config.php';
 if (is_file($__cfg)) require_once $__cfg;
 
+require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/content.php';
 
 function all_posts() {
+  if (sb_enabled()) return sb_all_posts();
   $out = [];
   foreach (glob(DATA_DIR . '/*.json') as $f) {
     $p = json_decode(file_get_contents($f), true);
@@ -30,27 +32,32 @@ function all_posts() {
   return $out;
 }
 function get_post($slug) {
+  if (sb_enabled()) return sb_get_post($slug);
   $f = DATA_DIR . '/' . basename($slug) . '.json';
   return is_file($f) ? json_decode(file_get_contents($f), true) : null;
 }
 function save_post($p) {
+  if (sb_enabled()) return sb_save_post($p);
   if (!is_dir(DATA_DIR)) mkdir(DATA_DIR, 0755, true);
   file_put_contents(DATA_DIR . '/' . $p['slug'] . '.json',
     json_encode($p, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 }
 function delete_post($slug) {
+  if (sb_enabled()) return sb_delete_post($slug);
   $f = DATA_DIR . '/' . basename($slug) . '.json';
   if (is_file($f)) unlink($f);
 }
 
 function comments_file($slug) { return COMMENT_DIR . '/' . basename($slug) . '.json'; }
 function get_comments($slug) {
+  if (sb_enabled()) return sb_get_comments($slug);
   $f = comments_file($slug);
   if (!is_file($f)) return [];
   $c = json_decode(file_get_contents($f), true);
   return is_array($c) ? $c : [];
 }
 function add_comment($slug, $name, $body) {
+  if (sb_enabled()) return sb_add_comment($slug, $name, $body);
   if (!is_dir(COMMENT_DIR)) mkdir(COMMENT_DIR, 0755, true);
   $c = get_comments($slug);
   $c[] = ['name' => $name, 'body' => $body, 'created' => time()];
