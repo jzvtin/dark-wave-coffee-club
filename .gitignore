@@ -1,0 +1,7 @@
+config.php
+data/
+uploads/
+index.html
+*.original.md
+.DS_Store
+Thumbs.db

@@ -1,0 +1,5 @@
+# Dark Wave Coffee Club — clean URLs
+RewriteEngine On
+
+# /admin (and /admin/) -> admin.php
+RewriteRule ^admin/?$ admin.php [L]
